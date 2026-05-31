@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Claro — Faturamento",
+    "baseUrl": "http://app-claro.intranet.com.br:8080",
+    "username": "monitor_claro",
+    "password": "senha_claro_123"
+  },
+  {
+    "id": 2,
+    "name": "Bradesco — Portal RH",
+    "baseUrl": "http://rh.bradesco.intranet.com.br",
+    "username": "svc_monitoring",
+    "password": "Brad3sc0@RH"
+  },
+  {
+    "id": 3,
+    "name": "Itaú — Conciliação",
+    "baseUrl": "http://conciliacao.itau.local:9090",
+    "username": "admin_monitoring",
+    "password": "it4u_conc#2024"
+  },
+  {
+    "id": 4,
+    "name": "Vivo — CRM",
+    "baseUrl": "http://crm-vivo.intranet:8443",
+    "username": "vivo_svc",
+    "password": "CRM_Viv0!"
+  }
+]

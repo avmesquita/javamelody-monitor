@@ -1,0 +1,128 @@
+.page {
+  min-height: 100vh;
+  background: #f6f5f0;
+  padding: 0 0 3rem;
+}
+
+/* ── Topbar ─────────────────────────────────────────── */
+.topbar {
+  display: flex; align-items: center; gap: 1rem;
+  flex-wrap: wrap;
+  background: #fff; border-bottom: 1px solid #e8e8e5;
+  padding: 0.75rem 2rem;
+  position: sticky; top: 0; z-index: 10;
+
+  &__brand {
+    display: flex; align-items: center; gap: 8px;
+    margin-right: auto;
+  }
+
+  &__logo {
+    font-size: 22px; color: #185fa5; line-height: 1;
+  }
+
+  &__name {
+    font-size: 16px; font-weight: 700; color: #1a1a18;
+    letter-spacing: -.01em;
+  }
+
+  &__pills { display: flex; gap: 6px; }
+  &__right { display: flex; align-items: center; gap: 12px; }
+}
+
+.last-refresh { font-size: 12px; color: #888780; }
+
+.pill {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+
+  &--ok   { background: #E1F5EE; color: #085041; }
+  &--warn { background: #FAEEDA; color: #633806; }
+  &--err  { background: #FCEBEB; color: #791F1F; }
+}
+
+.pip {
+  width: 7px; height: 7px; border-radius: 50%;
+  &--ok   { background: #1D9E75; }
+  &--warn { background: #EF9F27; }
+  &--err  { background: #E24B4A; }
+}
+
+.btn-refresh {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: #185fa5;
+  background: #e6f1fb; border: 1px solid #b5d4f4;
+  border-radius: 8px; padding: 6px 14px; cursor: pointer;
+  transition: background .12s;
+
+  &:hover:not(:disabled) { background: #d0e8f7; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.icon {
+  width: 16px; height: 16px;
+  &.spin { animation: spin .8s linear infinite; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Grid ───────────────────────────────────────────── */
+.grid-section { padding: 1.5rem 2rem 0; }
+
+.client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* ── Detail ─────────────────────────────────────────── */
+.detail-section { padding: 1.25rem 2rem 0; }
+
+/* ── Botão de persistência ───────────────────────────────────────────────────── */
+.btn-persist {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 5px 12px;
+  border-radius: 8px; border: 1px solid #e8e8e5;
+  background: #f6f5f0; color: #888780; cursor: pointer;
+  transition: background .12s, border-color .12s;
+
+  &:hover { background: #e8e8e5; }
+
+  &--active {
+    background: #E1F5EE; border-color: #1D9E75; color: #085041;
+  }
+}
+
+.persist-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #d3d1c7; flex-shrink: 0;
+  transition: background .2s;
+
+  &--active {
+    background: #1D9E75;
+    animation: pulse-green 2s infinite;
+  }
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+
+/* ── Navegação ───────────────────────────────────────────────────────────────── */
+.topbar__nav { display: flex; gap: 4px; }
+
+.nav-btn {
+  font-size: 13px; font-weight: 600; padding: 5px 14px;
+  border-radius: 7px; border: 1px solid transparent;
+  cursor: pointer; color: #888780; background: transparent;
+  transition: background .1s, color .1s;
+  &:hover      { background: #f6f5f0; color: #1a1a18; }
+  &--active    { background: #e6f1fb; color: #185fa5; border-color: #b5d4f4; }
+}
+
+/* ── Catalog view ────────────────────────────────────────────────────────────── */
+.catalog-view {
+  flex: 1; overflow: hidden;
+  display: flex; flex-direction: column;
+}

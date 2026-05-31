@@ -1,0 +1,212 @@
+// ── Backdrop ─────────────────────────────────────────────────────────────────
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: fadeIn .15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  width: min(900px, 100%);
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: slideUp .18s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: none; opacity: 1 } }
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.modal__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid #eeeee9;
+  flex-shrink: 0;
+}
+
+.modal__title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 16px; font-weight: 600; color: #1a1a18;
+}
+
+.modal__icon { font-size: 18px; }
+
+.modal__close {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: none; background: #f0efe8; color: #888780;
+  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .1s;
+  &:hover { background: #e4e3db; color: #1a1a18; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.modal__loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 3rem; color: #888780; font-size: 14px;
+}
+
+.spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid #e0dfd8; border-top-color: #185fa5;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg) } }
+
+// ── Error state ───────────────────────────────────────────────────────────────
+.modal__error {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 2rem; color: #A32D2D; font-size: 14px; text-align: center;
+}
+
+.btn-retry {
+  font-size: 13px; padding: 6px 16px; border-radius: 8px;
+  border: 1px solid #E24B4A; background: #FCEBEB; color: #A32D2D;
+  cursor: pointer;
+  &:hover { background: #f5d5d5; }
+}
+
+// ── Chart section ─────────────────────────────────────────────────────────────
+.chart-section {
+  padding: 1rem 1.5rem .5rem;
+  border-bottom: 1px solid #f2f1ec;
+  flex-shrink: 0;
+}
+
+.section-label { font-size: 12px; color: #888780; margin-bottom: 8px; }
+
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.chart-col { position: relative; }
+
+.chart-legend {
+  position: absolute; top: 0; right: 0;
+  font-size: 10px; font-weight: 700; padding: 2px 6px;
+  border-radius: 4px; z-index: 1;
+  &.http { background: #FCEBEB; color: #A32D2D; }
+  &.sql  { background: #FAEEDA; color: #633806; }
+}
+
+.chart-hint {
+  font-size: 11px; color: #b4b2a9; margin-top: 4px;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+.tabs {
+  display: flex; gap: 4px;
+  padding: .75rem 1.5rem .5rem;
+  border-bottom: 1px solid #f2f1ec;
+  flex-shrink: 0;
+}
+
+.tab {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; padding: 5px 14px; border-radius: 7px;
+  border: 1px solid #e8e8e5; cursor: pointer;
+  color: #888780; background: transparent;
+  transition: background .1s, color .1s;
+
+  &:hover    { background: #f6f5f0; color: #1a1a18; }
+  &--active  { background: #e6f1fb; color: #185fa5; border-color: #b5d4f4; font-weight: 600; }
+}
+
+.tab-count {
+  font-size: 11px; font-weight: 700;
+  background: #eeeee9; color: #5F5E5A;
+  padding: 1px 6px; border-radius: 10px;
+  &.err { background: #FCEBEB; color: #A32D2D; }
+}
+
+// ── Tab content ───────────────────────────────────────────────────────────────
+.tab-content {
+  flex: 1; overflow-y: auto; padding: .5rem 0;
+}
+
+.empty {
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem; color: #1D9E75; font-size: 14px; gap: 8px;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.table-wrap { overflow-x: auto; padding: 0 1.5rem; }
+
+.err-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+
+  th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    color: #888780; text-transform: uppercase; letter-spacing: .04em;
+    padding: 0 8px 8px; border-bottom: 1px solid #eeeee9;
+  }
+
+  td {
+    padding: 8px; border-bottom: 1px solid #f2f1ec; color: #1a1a18;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf7; }
+
+  .num { text-align: right; white-space: nowrap; }
+
+  .uri {
+    font-family: 'Courier New', monospace; font-size: 12px;
+    max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .err-count { font-weight: 700; }
+}
+
+// ── Stack traces ──────────────────────────────────────────────────────────────
+.traces { padding: 0 1.5rem; display: flex; flex-direction: column; gap: 8px; }
+
+.trace {
+  border: 1px solid #eeeee9; border-radius: 8px; overflow: hidden;
+
+  &__header {
+    width: 100%; display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 10px 14px; background: #fafaf7;
+    border: none; cursor: pointer; text-align: left; gap: 8px;
+    &:hover { background: #f0efe8; }
+  }
+
+  &__msg {
+    font-family: 'Courier New', monospace; font-size: 12px;
+    color: #A32D2D; line-height: 1.4; flex: 1;
+  }
+
+  &__toggle {
+    font-size: 10px; color: #888780; flex-shrink: 0; margin-top: 2px;
+  }
+
+  &__body {
+    font-family: 'Courier New', monospace; font-size: 11px;
+    line-height: 1.5; color: #444441;
+    background: #f6f5f0; padding: 12px 14px;
+    margin: 0; overflow-x: auto; white-space: pre-wrap;
+    border-top: 1px solid #eeeee9;
+    max-height: 300px; overflow-y: auto;
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.modal__footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .75rem 1.5rem;
+  border-top: 1px solid #f2f1ec;
+  font-size: 11px; color: #b4b2a9;
+  flex-shrink: 0;
+}
+
+.btn-refresh {
+  font-size: 12px; padding: 4px 12px; border-radius: 7px;
+  border: 1px solid #e8e8e5; background: #f6f5f0; color: #5F5E5A;
+  cursor: pointer;
+  &:hover { background: #e8e8e5; }
+}

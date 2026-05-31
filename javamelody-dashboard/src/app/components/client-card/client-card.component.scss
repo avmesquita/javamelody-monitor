@@ -1,0 +1,103 @@
+:host { display: block; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e8e8e5;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+
+  &:hover        { border-color: #b0afa8; }
+  &:focus-visible{ box-shadow: 0 0 0 3px rgba(24,95,165,.35); }
+  &--active      { border: 2px solid #185fa5; }
+  &--warn        { border-left: 3px solid #EF9F27; }
+  &--err         { border-left: 3px solid #E24B4A; }
+}
+
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a18;
+}
+
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%; flex-shrink: 0;
+  &--ok   { background: #1D9E75; }
+  &--warn { background: #EF9F27; animation: pulse-warn 2s infinite; }
+  &--err  { background: #E24B4A; animation: pulse-err  1.2s infinite; }
+}
+
+@keyframes pulse-warn {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+@keyframes pulse-err {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+
+.badge {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 6px;
+  &--ok   { background: #E1F5EE; color: #085041; }
+  &--warn { background: #FAEEDA; color: #633806; }
+  &--err  { background: #FCEBEB; color: #791F1F; }
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.metric {
+  background: #f6f5f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+
+  &__label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #888780;
+    margin-bottom: 3px;
+  }
+
+  &__value {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a18;
+    line-height: 1.2;
+  }
+}
+
+.bar {
+  height: 3px; border-radius: 2px;
+  background: #e0dfd8; margin-top: 6px; overflow: hidden;
+
+  &__fill {
+    height: 100%; border-radius: 2px;
+    transition: width .5s ease;
+  }
+}
+
+.card__footer {
+  display: flex; justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px; color: #888780;
+}

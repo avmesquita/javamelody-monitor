@@ -1,0 +1,66 @@
+<div class="page" *ngIf="clients$ | async as clients">
+  <!-- ── Top bar ─────────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__logo" aria-hidden="true">◈</span>
+      <span class="topbar__name">JavaMelody Monitor</span>
+    </div>
+
+    <!-- Navegação principal -->
+    <nav class="topbar__nav">
+      <button class="nav-btn" [class.nav-btn--active]="activeView() === 'dashboard'" (click)="setView('dashboard')">
+        📊 Dashboard
+      </button>
+      <button class="nav-btn" [class.nav-btn--active]="activeView() === 'catalog'" (click)="setView('catalog')">
+        📖 Catálogo de Erros
+      </button>
+    </nav>
+
+    <div class="topbar__right">
+      <div class="topbar__pills" *ngIf="activeView() === 'dashboard'">
+        <span class="pill pill--ok"><span class="pip pip--ok"></span>{{ counts(clients).ok }} Normal</span>
+        <span class="pill pill--warn" *ngIf="counts(clients).warn > 0"><span class="pip pip--warn"></span>{{ counts(clients).warn }} Atenção</span>
+        <span class="pill pill--err"  *ngIf="counts(clients).err  > 0"><span class="pip pip--err"></span>{{ counts(clients).err }} Crítico</span>
+      </div>
+
+      <ng-container *ngIf="config$ | async as cfg">
+        <button class="btn-persist" [class.btn-persist--active]="cfg.persistenceEnabled" (click)="togglePersistence()"
+          [title]="cfg.persistenceEnabled ? 'MongoDB ativo — clique para desabilitar' : 'Sem persistência — clique para habilitar'">
+          <span class="persist-dot" [class.persist-dot--active]="cfg.persistenceEnabled"></span>
+          {{ cfg.persistenceEnabled ? 'MongoDB ativo' : 'Sem persistência' }}
+        </button>
+      </ng-container>
+
+      <span class="last-refresh" *ngIf="activeView() === 'dashboard' && (lastRefresh$ | async) as ts">
+        Atualizado {{ ts | date:'HH:mm:ss' }}
+      </span>
+      <button class="btn-refresh" *ngIf="activeView() === 'dashboard'" (click)="refresh()" [disabled]="loading$ | async">
+        <svg class="icon" [class.spin]="loading$ | async" viewBox="0 0 20 20" fill="none">
+          <path d="M17 10A7 7 0 1 1 10 3V1l4 3-4 3V5a5 5 0 1 0 5 5h2z" fill="currentColor"/>
+        </svg>
+        Atualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Dashboard view ─────────────────────────────────────────────────── -->
+  <ng-container *ngIf="activeView() === 'dashboard'">
+    <section class="grid-section">
+      <div class="client-grid">
+        <app-client-card
+          *ngFor="let c of clients; trackBy: trackById"
+          [client]="c" [active]="selected()?.id === c.id"
+          (selected)="select($event)"
+        />
+      </div>
+    </section>
+    <section class="detail-section">
+      <app-detail-panel [client]="selected()" />
+    </section>
+  </ng-container>
+
+  <!-- ── Catalog view ───────────────────────────────────────────────────── -->
+  <div class="catalog-view" *ngIf="activeView() === 'catalog'">
+    <app-catalog />
+  </div>
+</div>

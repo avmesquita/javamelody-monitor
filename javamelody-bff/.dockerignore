@@ -1,0 +1,6 @@
+node_modules
+.env
+clients.json
+*.log
+.git
+README.md

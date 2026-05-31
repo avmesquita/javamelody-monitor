@@ -1,0 +1,50 @@
+<article
+  class="card"
+  [class.card--active]="active"
+  [class.card--warn]="client.status === 'warn'"
+  [class.card--err]="client.status === 'err'"
+  (click)="selected.emit(client)"
+  role="button"
+  [attr.aria-pressed]="active"
+  tabindex="0"
+  (keydown.enter)="selected.emit(client)"
+>
+  <header class="card__header">
+    <div class="card__name">
+      <span class="dot" [class]="'dot--' + client.status"></span>
+      {{ client.name }}
+    </div>
+    <span class="badge" [class]="'badge--' + client.status">{{ statusLabel }}</span>
+  </header>
+
+  <div class="metrics">
+    <!-- CPU -->
+    <div class="metric">
+      <span class="metric__label">CPU</span>
+      <span class="metric__value" [style.color]="cpuColor(client.cpu)">{{ client.cpu }}%</span>
+      <div class="bar">
+        <div class="bar__fill" [style.width.%]="client.cpu" [style.background]="cpuColor(client.cpu)"></div>
+      </div>
+    </div>
+
+    <!-- Heap -->
+    <div class="metric">
+      <span class="metric__label">Heap</span>
+      <span class="metric__value" [style.color]="heapColor(client.heap)">{{ client.heap }}%</span>
+      <div class="bar">
+        <div class="bar__fill" [style.width.%]="client.heap" [style.background]="heapColor(client.heap)"></div>
+      </div>
+    </div>
+
+    <!-- Sessions -->
+    <div class="metric">
+      <span class="metric__label">Sessões</span>
+      <span class="metric__value">{{ client.sessions | number }}</span>
+    </div>
+  </div>
+
+  <footer class="card__footer">
+    <span class="card__uptime">⏱ {{ client.uptime }}</span>
+    <span class="card__threads">{{ client.threads }} threads</span>
+  </footer>
+</article>

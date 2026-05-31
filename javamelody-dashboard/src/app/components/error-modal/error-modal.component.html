@@ -1,0 +1,141 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="onBackdropClick($event)" role="dialog" aria-modal="true" [attr.aria-label]="'Detalhes de erros — ' + clientName">
+  <div class="modal">
+
+    <!-- Header -->
+    <header class="modal__header">
+      <div class="modal__title">
+        <span class="modal__icon">⚠</span>
+        Detalhes de Erros — {{ clientName }}
+      </div>
+      <button class="modal__close" (click)="close()" aria-label="Fechar">✕</button>
+    </header>
+
+    <!-- Loading -->
+    <div class="modal__loading" *ngIf="loading()">
+      <div class="spinner"></div>
+      <span>Buscando dados de erros...</span>
+    </div>
+
+    <!-- Error state -->
+    <div class="modal__error" *ngIf="!loading() && error()">
+      <span>⚠ {{ error() }}</span>
+      <button class="btn-retry" (click)="load()">Tentar novamente</button>
+    </div>
+
+    <!-- Content -->
+    <ng-container *ngIf="!loading() && !error() && details() as d">
+
+      <!-- Gráfico de erros ao longo do tempo -->
+      <div class="chart-section" *ngIf="httpErrorHistory.length > 1 || sqlErrorHistory.length > 1">
+        <p class="section-label">Erros acumulados por coleta</p>
+        <div class="chart-row">
+          <div class="chart-col" *ngIf="httpErrorHistory.length > 1">
+            <span class="chart-legend http">HTTP</span>
+            <app-heap-chart [data]="httpErrorHistory" color="#E24B4A" />
+          </div>
+          <div class="chart-col" *ngIf="sqlErrorHistory.length > 1">
+            <span class="chart-legend sql">SQL</span>
+            <app-heap-chart [data]="sqlErrorHistory" color="#EF9F27" />
+          </div>
+        </div>
+        <p class="chart-hint">O gráfico acumula dados a cada vez que você abre este painel.</p>
+      </div>
+
+      <!-- Tabs -->
+      <nav class="tabs">
+        <button class="tab" [class.tab--active]="activeTab() === 'http'" (click)="setTab('http')">
+          HTTP com Erro
+          <span class="tab-count" *ngIf="d.httpErrors.length">{{ d.httpErrors.length }}</span>
+        </button>
+        <button class="tab" [class.tab--active]="activeTab() === 'sql'" (click)="setTab('sql')">
+          SQL com Erro
+          <span class="tab-count" *ngIf="d.sqlErrors.length">{{ d.sqlErrors.length }}</span>
+        </button>
+        <button class="tab" [class.tab--active]="activeTab() === 'stack'" (click)="setTab('stack')">
+          Stack Traces
+          <span class="tab-count err" *ngIf="d.stackTraces.length">{{ d.stackTraces.length }}</span>
+        </button>
+      </nav>
+
+      <!-- HTTP Errors -->
+      <div class="tab-content" *ngIf="activeTab() === 'http'">
+        <div class="empty" *ngIf="!d.httpErrors.length">
+          <span>✓ Nenhuma requisição HTTP com erro encontrada.</span>
+        </div>
+        <div class="table-wrap" *ngIf="d.httpErrors.length">
+          <table class="err-table">
+            <thead>
+              <tr>
+                <th>Endpoint</th>
+                <th class="num">Chamadas</th>
+                <th class="num">Média</th>
+                <th class="num">Máximo</th>
+                <th class="num">Erros</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of d.httpErrors">
+                <td class="uri">{{ r.uri }}</td>
+                <td class="num">{{ r.hits | number }}</td>
+                <td class="num">{{ fmtMs(r.avgMs) }}</td>
+                <td class="num">{{ fmtMs(r.maxMs) }}</td>
+                <td class="num err-count" [style.color]="errColor(r.errors)">{{ r.errors }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SQL Errors -->
+      <div class="tab-content" *ngIf="activeTab() === 'sql'">
+        <div class="empty" *ngIf="!d.sqlErrors.length">
+          <span>✓ Nenhuma query SQL com erro encontrada.</span>
+        </div>
+        <div class="table-wrap" *ngIf="d.sqlErrors.length">
+          <table class="err-table">
+            <thead>
+              <tr>
+                <th>Query</th>
+                <th class="num">Execuções</th>
+                <th class="num">Média</th>
+                <th class="num">Máximo</th>
+                <th class="num">Erros</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of d.sqlErrors">
+                <td class="uri">{{ r.uri }}</td>
+                <td class="num">{{ r.hits | number }}</td>
+                <td class="num">{{ fmtMs(r.avgMs) }}</td>
+                <td class="num">{{ fmtMs(r.maxMs) }}</td>
+                <td class="num err-count" [style.color]="errColor(r.errors)">{{ r.errors }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Stack Traces -->
+      <div class="tab-content" *ngIf="activeTab() === 'stack'">
+        <div class="empty" *ngIf="!d.stackTraces.length">
+          <span>✓ Nenhuma exceção registrada recentemente.</span>
+        </div>
+        <div class="traces" *ngIf="d.stackTraces.length">
+          <div class="trace" *ngFor="let t of d.stackTraces; let i = index">
+            <button class="trace__header" (click)="toggleTrace(i)">
+              <span class="trace__msg">{{ t.message | slice:0:120 }}{{ t.message.length > 120 ? '…' : '' }}</span>
+              <span class="trace__toggle">{{ expandedTrace === i ? '▲' : '▼' }}</span>
+            </button>
+            <pre class="trace__body" *ngIf="expandedTrace === i">{{ t.full }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal__footer">
+        Dados coletados em {{ d.fetchedAt | date:'HH:mm:ss' }}
+        <button class="btn-refresh" (click)="load()">↻ Atualizar</button>
+      </footer>
+    </ng-container>
+
+  </div>
+</div>

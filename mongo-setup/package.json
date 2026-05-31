@@ -1,0 +1,12 @@
+{
+  "name": "javamelody-mongo-setup",
+  "version": "1.0.0",
+  "description": "Setup do banco MongoDB para o JavaMelody Monitor",
+  "main": "setup.js",
+  "scripts": {
+    "start": "node setup.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.0.0"
+  }
+}

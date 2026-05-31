@@ -1,0 +1,137 @@
+<section class="panel" *ngIf="client; else empty">
+  <!-- Header -->
+  <header class="panel__header">
+    <div class="panel__title">
+      <span class="dot" [class]="'dot--' + client.status"></span>
+      {{ client.name }}
+    </div>
+    <span class="badge" [class]="'badge--' + client.status">{{ statusLabel }}</span>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs" role="tablist">
+    <button
+      *ngFor="let tab of ['requests','memory','infra']"
+      class="tab"
+      [class.tab--active]="activeTab === tab"
+      role="tab"
+      [attr.aria-selected]="activeTab === tab"
+      (click)="setTab($any(tab))"
+    >{{ tab === 'requests' ? 'Requisições' : tab === 'memory' ? 'Memória' : 'Infraestrutura' }}</button>
+  </nav>
+
+  <!-- ── REQUESTS TAB ─────────────────────────────── -->
+  <div *ngIf="activeTab === 'requests'" class="tab-content">
+    <div class="tab-content__toolbar">
+      <p class="section-label">Resumo por camada</p>
+      <button
+        class="btn-errors"
+        [class.btn-errors--active]="totalErrors > 0"
+        (click)="openErrorModal()"
+        [title]="totalErrors > 0 ? totalErrors + ' erros detectados — clique para analisar' : 'Ver detalhes de erros'"
+      >
+        <span class="btn-errors__icon">{{ totalErrors > 0 ? '⚠' : '🔍' }}</span>
+        Ver detalhes de erros
+        <span class="btn-errors__count" *ngIf="totalErrors > 0">{{ totalErrors }}</span>
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="req-table">
+        <thead>
+          <tr>
+            <th>Camada</th>
+            <th class="num">Chamadas</th>
+            <th class="num">Média</th>
+            <th class="num">Máximo</th>
+            <th class="num">Erros</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of client.requests">
+            <td class="uri">{{ r.uri }}</td>
+            <td class="num">
+              <span class="spark" [style.width.px]="barWidth(r.hits)"></span>
+              {{ r.hits | number }}
+            </td>
+            <td class="num" [style.color]="avgColor(r.avgMs)">{{ fmtMs(r.avgMs) }}</td>
+            <td class="num" [style.color]="maxColor(r.maxMs)">{{ fmtMs(r.maxMs) }}</td>
+            <td class="num" [style.color]="errColor(r.errors)" [style.font-weight]="r.errors > 0 ? '700' : '400'">
+              {{ r.errors }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── MEMORY TAB ───────────────────────────────── -->
+  <div *ngIf="activeTab === 'memory'" class="tab-content">
+    <div class="mem-grid">
+      <div class="mem-card">
+        <span class="mem-card__label">Heap usada</span>
+        <span class="mem-card__value">{{ client.heapUsed | number }} MB</span>
+      </div>
+      <div class="mem-card">
+        <span class="mem-card__label">Heap máxima</span>
+        <span class="mem-card__value">{{ client.heapMax | number }} MB</span>
+      </div>
+      <div class="mem-card">
+        <span class="mem-card__label">Uso atual</span>
+        <span class="mem-card__value" [style.color]="heapColor">{{ client.heap }}%</span>
+      </div>
+    </div>
+    <p class="section-label" style="margin-top:1rem">Evolução do Heap (últimas 12 coletas)</p>
+    <app-heap-chart [data]="client.heapHistory" [color]="heapColor" />
+  </div>
+
+  <!-- ── INFRA TAB ────────────────────────────────── -->
+  <div *ngIf="activeTab === 'infra'" class="tab-content">
+    <div class="infra-grid">
+      <div class="mem-card">
+        <span class="mem-card__label">CPU atual</span>
+        <span class="mem-card__value">{{ client.cpu }}%</span>
+      </div>
+      <div class="mem-card">
+        <span class="mem-card__label">Threads ativas</span>
+        <span class="mem-card__value">{{ client.threads }}</span>
+      </div>
+      <div class="mem-card">
+        <span class="mem-card__label">Sessões HTTP</span>
+        <span class="mem-card__value">{{ client.sessions | number }}</span>
+      </div>
+      <div class="mem-card">
+        <span class="mem-card__label">Uptime</span>
+        <span class="mem-card__value">{{ client.uptime }}</span>
+      </div>
+    </div>
+    <div class="url-block">
+      <p class="section-label">Endpoint de monitoramento</p>
+      <code>{{ client.baseUrl }}/monitoring?format=prometheus</code>
+    </div>
+  </div>
+
+  <footer class="panel__footer">
+    Última atualização: {{ client.lastUpdated | date:'HH:mm:ss' }}
+    <span *ngIf="client.error" class="err-msg">⚠ {{ client.error }}</span>
+  </footer>
+</section>
+
+<!-- Modal de detalhes de erros -->
+<app-error-modal
+  [clientId]="client?.id ?? null"
+  [clientName]="client?.name ?? ''"
+  [visible]="showErrorModal()"
+  (closed)="closeErrorModal()"
+/>
+
+<ng-template #empty>
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <rect x="4" y="4" width="40" height="40" rx="10" fill="#f0efe8"/>
+      <path d="M16 28 Q24 20 32 28" stroke="#b4b2a9" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <circle cx="17" cy="21" r="2" fill="#b4b2a9"/>
+      <circle cx="31" cy="21" r="2" fill="#b4b2a9"/>
+    </svg>
+    <p>Selecione um cliente no painel acima para ver os detalhes.</p>
+  </div>
+</ng-template>

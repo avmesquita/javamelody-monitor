@@ -1,0 +1,133 @@
+services:
+
+  # ── MongoDB ────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: javamelody-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS:-mongopass}
+      MONGO_INITDB_DATABASE:      javamelody
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/init.js:ro
+    ports:
+      - "27017:27017"          # exposto apenas para debug local; remova em produção
+    networks:
+      - javamelody-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Mongo Express (UI admin — opcional) ───────────────────────────────────
+  mongo-express:
+    image: mongo-express:1
+    container_name: javamelody-mongo-ui
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USER:-admin}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASS:-mongopass}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER:-admin}:${MONGO_PASS:-mongopass}@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USER:-admin}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASS:-mongoexpresspass}
+    ports:
+      - "8081:8081"
+    networks:
+      - javamelody-net
+    profiles:
+      - debug                   # sobe só com: docker compose --profile debug up
+
+  # ── BFF (Node/Express) ────────────────────────────────────────────────────
+  bff:
+    build:
+      context: ./javamelody-bff
+      dockerfile: Dockerfile
+    container_name: javamelody-bff
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      BFF_PORT:         3000
+      CORS_ORIGINS:     ${CORS_ORIGINS:-http://localhost:4200}
+      MONGO_ENABLED:    ${MONGO_ENABLED:-true}
+      MONGO_URI:        mongodb://${MONGO_USER:-admin}:${MONGO_PASS:-mongopass}@mongo:27017/javamelody?authSource=admin
+      HISTORY_API_URL:  http://localhost:3001
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-30000}
+    volumes:
+      # clients.json montado externamente — edite sem rebuild
+      - ./javamelody-bff/clients.json:/app/clients.json:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - javamelody-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── History API (NestJS) ──────────────────────────────────────────────────
+  api:
+    build:
+      context: ./javamelody-api
+      dockerfile: Dockerfile
+    container_name: javamelody-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT:          3001
+      MONGO_URI:     mongodb://${MONGO_USER:-admin}:${MONGO_PASS:-mongopass}@mongo:27017/javamelody?authSource=admin
+      CORS_ORIGINS:        ${CORS_ORIGINS:-http://localhost:4200}
+      ANTHROPIC_API_KEY:   ${ANTHROPIC_API_KEY:-}
+    ports:
+      - "3001:3001"
+    networks:
+      - javamelody-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/docs-json"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ── Dashboard Angular (nginx) ─────────────────────────────────────────────
+  dashboard:
+    build:
+      context: ./javamelody-dashboard
+      dockerfile: Dockerfile
+    container_name: javamelody-dashboard
+    restart: unless-stopped
+    depends_on:
+      bff:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    ports:
+      - "4200:80"
+    networks:
+      - javamelody-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# ── Volumes e redes ───────────────────────────────────────────────────────────
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  javamelody-net:
+    driver: bridge

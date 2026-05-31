@@ -1,0 +1,149 @@
+.panel {
+  background: #fff;
+  border: 1px solid #e8e8e5;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.panel__header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}
+
+.panel__title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 16px; font-weight: 600; color: #1a1a18;
+}
+
+.dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  &--ok   { background: #1D9E75; }
+  &--warn { background: #EF9F27; }
+  &--err  { background: #E24B4A; }
+}
+
+.badge {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+  &--ok   { background: #E1F5EE; color: #085041; }
+  &--warn { background: #FAEEDA; color: #633806; }
+  &--err  { background: #FCEBEB; color: #791F1F; }
+}
+
+/* tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 1rem; }
+.tab {
+  font-size: 13px; padding: 5px 14px;
+  border-radius: 7px; border: 1px solid #e8e8e5;
+  cursor: pointer; color: #888780; background: transparent;
+  transition: background .1s, color .1s;
+  &:hover      { background: #f6f5f0; color: #1a1a18; }
+  &--active    { background: #e6f1fb; color: #185fa5; border-color: #b5d4f4; font-weight: 600; }
+}
+
+/* section label */
+.section-label { font-size: 12px; color: #888780; margin-bottom: 8px; }
+
+/* requests table */
+.table-wrap { overflow-x: auto; }
+.req-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+
+  th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    color: #888780; text-transform: uppercase; letter-spacing: .04em;
+    padding: 0 8px 8px; border-bottom: 1px solid #eeeee9;
+  }
+  td {
+    padding: 8px; border-bottom: 1px solid #f2f1ec;
+    color: #1a1a18;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf7; }
+
+  .num { text-align: right; }
+  .uri {
+    font-family: 'Courier New', monospace; font-size: 12px;
+    max-width: 240px; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+    color: #444441;
+  }
+}
+
+.spark {
+  display: inline-block; height: 5px; border-radius: 3px;
+  background: #1D9E75; opacity: .35; vertical-align: middle; margin-right: 4px;
+}
+
+/* memory */
+.mem-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+}
+.infra-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.mem-card {
+  background: #f6f5f0; border-radius: 8px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+
+  &__label { font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: .04em; }
+  &__value { font-size: 16px; font-weight: 600; color: #1a1a18; }
+}
+
+/* infra url */
+.url-block { margin-top: 1rem; }
+code {
+  display: block; font-size: 12px; font-family: 'Courier New', monospace;
+  color: #5F5E5A; background: #f6f5f0; padding: 8px 12px;
+  border-radius: 8px; word-break: break-all; margin-top: 4px;
+}
+
+/* footer */
+.panel__footer {
+  margin-top: 1rem; font-size: 11px; color: #b4b2a9;
+  border-top: 1px solid #f2f1ec; padding-top: 8px;
+  display: flex; justify-content: space-between;
+}
+.err-msg { color: #A32D2D; }
+
+/* empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px; padding: 3rem 1rem;
+  color: #888780; font-size: 14px; text-align: center;
+  border: 1px solid #e8e8e5; border-radius: 12px;
+  background: #fafaf7;
+}
+
+/* ── Toolbar da aba Requisições ─────────────────────────────────────────────── */
+.tab-content__toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+
+.btn-errors {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 5px 12px;
+  border-radius: 7px; border: 1px solid #e8e8e5;
+  background: #f6f5f0; color: #5F5E5A; cursor: pointer;
+  transition: background .1s, border-color .1s;
+
+  &:hover { background: #e8e8e5; }
+
+  &--active {
+    background: #FAEEDA; border-color: #EF9F27; color: #633806;
+    animation: pulse-btn 2s infinite;
+  }
+
+  &__icon { font-size: 13px; }
+
+  &__count {
+    background: #E24B4A; color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px;
+  }
+}
+
+@keyframes pulse-btn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,159,39,.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(239,159,39,.0); }
+}

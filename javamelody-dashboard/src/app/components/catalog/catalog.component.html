@@ -1,0 +1,253 @@
+<div class="catalog">
+
+  <!-- ── Header com stats ─────────────────────────────────────────────────── -->
+  <header class="catalog__header">
+    <div class="catalog__title">
+      <span class="catalog__icon">📖</span>
+      Catálogo de Erros
+    </div>
+
+    <div class="stats-row" *ngIf="stats() as s">
+      <div class="stat-chip stat-chip--err">
+        <span>🔴 Abertos</span>
+        <strong>{{ s.open }}</strong>
+      </div>
+      <div class="stat-chip stat-chip--warn">
+        <span>🟡 Investigando</span>
+        <strong>{{ s.investigating }}</strong>
+      </div>
+      <div class="stat-chip stat-chip--ok">
+        <span>✅ Resolvidos</span>
+        <strong>{{ s.resolved }}</strong>
+      </div>
+      <div class="stat-chip stat-chip--critical" *ngIf="s.critical > 0">
+        <span>⚡ Críticos</span>
+        <strong>{{ s.critical }}</strong>
+      </div>
+    </div>
+  </header>
+
+  <div class="catalog__body">
+
+    <!-- ── Coluna esquerda: lista ──────────────────────────────────────────── -->
+    <div class="list-col">
+
+      <!-- Filtros -->
+      <div class="filters">
+        <input
+          class="filter-input"
+          placeholder="Buscar por exception, URI..."
+          [(ngModel)]="filterSearch"
+          (keydown.enter)="applyFilters()"
+        />
+        <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+          <option value="">Todos os status</option>
+          <option value="open">Aberto</option>
+          <option value="investigating">Investigando</option>
+          <option value="resolved">Resolvido</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filterSeverity" (change)="applyFilters()">
+          <option value="">Todas as severidades</option>
+          <option value="critical">Crítico</option>
+          <option value="high">Alto</option>
+          <option value="medium">Médio</option>
+          <option value="low">Baixo</option>
+        </select>
+        <button class="btn-clear" (click)="clearFilters()" title="Limpar filtros">✕</button>
+      </div>
+
+      <!-- Lista de entradas -->
+      <div class="entry-list" [class.loading]="loading()">
+        <div class="entry-list__empty" *ngIf="!loading() && entries().length === 0">
+          Nenhum erro catalogado ainda.
+        </div>
+
+        <div
+          *ngFor="let e of entries(); trackBy: trackById"
+          class="entry-card"
+          [class.entry-card--selected]="selected()?._id === e._id"
+          (click)="select(e)"
+        >
+          <div class="entry-card__top">
+            <span class="exception-badge">{{ e.exceptionType }}</span>
+            <span class="severity-badge"
+              [style.background]="severityBg(e.aiAnalysis!.severity)"
+              [style.color]="severityColor(e.aiAnalysis!.severity)"
+              *ngIf="e.aiAnalysis"
+            >{{ e.aiAnalysis.severity }}</span>
+            <span class="ai-pending" *ngIf="e.aiPending">⏳ IA...</span>
+          </div>
+
+          <div class="entry-card__uri">{{ e.uri }}</div>
+
+          <div class="entry-card__bottom">
+            <span class="status-dot"
+              [style.background]="statusColor(e.status)"
+              [title]="statusLabel(e.status)"
+            ></span>
+            <span class="entry-card__client">{{ e.clientName }}</span>
+            <span class="entry-card__count">{{ e.occurrences }}x</span>
+            <span class="entry-card__date">{{ e.lastSeenAt | date:'dd/MM HH:mm' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginação -->
+      <div class="pagination" *ngIf="total() > pageSize">
+        <button class="btn-page" (click)="prevPage()" [disabled]="page === 0">‹</button>
+        <span>{{ page + 1 }} / {{ Math.ceil(total() / pageSize) }}</span>
+        <button class="btn-page" (click)="nextPage()" [disabled]="(page + 1) * pageSize >= total()">›</button>
+      </div>
+    </div>
+
+    <!-- ── Coluna direita: detalhe ─────────────────────────────────────────── -->
+    <div class="detail-col" *ngIf="selected() as e; else noSelection">
+
+      <div class="detail-header">
+        <div>
+          <h2 class="detail-title">{{ e.exceptionType }}</h2>
+          <div class="detail-meta">
+            {{ e.clientName }} · {{ e.uri }} · HTTP {{ e.statusHttp }}
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-action btn-action--ghost" (click)="reanalyze(e)" [disabled]="e.aiPending" title="Re-analisar com IA">
+            🤖 Reanalisar
+          </button>
+          <button class="btn-action btn-action--primary" (click)="startEdit()">
+            ✏ Atualizar
+          </button>
+          <button class="btn-close" (click)="closeDetail()">✕</button>
+        </div>
+      </div>
+
+      <!-- Estatísticas rápidas -->
+      <div class="detail-stats">
+        <div class="dstat">
+          <span class="dstat__label">Ocorrências</span>
+          <span class="dstat__value">{{ e.occurrences }}</span>
+        </div>
+        <div class="dstat">
+          <span class="dstat__label">Primeira vez</span>
+          <span class="dstat__value">{{ e.firstSeenAt | date:'dd/MM/yy HH:mm' }}</span>
+        </div>
+        <div class="dstat">
+          <span class="dstat__label">Última vez</span>
+          <span class="dstat__value">{{ e.lastSeenAt | date:'dd/MM/yy HH:mm' }}</span>
+        </div>
+        <div class="dstat">
+          <span class="dstat__label">Status</span>
+          <span class="dstat__value" [style.color]="statusColor(e.status)">
+            {{ statusLabel(e.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- ── Análise IA ─────────────────────────────────────────────────── -->
+      <section class="ai-section">
+        <div class="section-label">🤖 Análise da IA</div>
+
+        <div class="ai-pending-msg" *ngIf="e.aiPending">
+          <span class="spinner"></span> A IA está analisando o erro...
+        </div>
+
+        <div class="ai-error-msg" *ngIf="!e.aiPending && e.aiError">
+          ⚠ Falha na análise: {{ e.aiError }}
+        </div>
+
+        <div class="ai-result" *ngIf="!e.aiPending && e.aiAnalysis as ai">
+          <div class="ai-top">
+            <span class="category-badge">{{ ai.category }}</span>
+            <span class="severity-badge-lg"
+              [style.background]="severityBg(ai.severity)"
+              [style.color]="severityColor(ai.severity)"
+            >{{ ai.severity }}</span>
+          </div>
+
+          <div class="ai-block">
+            <div class="ai-block__label">Causa provável</div>
+            <div class="ai-block__text">{{ ai.probableCause }}</div>
+          </div>
+
+          <div class="ai-block">
+            <div class="ai-block__label">Soluções sugeridas</div>
+            <ol class="fix-list">
+              <li *ngFor="let fix of ai.suggestedFixes">{{ fix }}</li>
+            </ol>
+          </div>
+
+          <div class="ai-block" *ngIf="ai.context">
+            <div class="ai-block__label">Contexto</div>
+            <div class="ai-block__text ai-block__text--muted">{{ ai.context }}</div>
+          </div>
+
+          <div class="ai-footer">
+            Análise por {{ ai.model }} em {{ ai.analyzedAt | date:'dd/MM/yy HH:mm' }}
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Stack trace ────────────────────────────────────────────────── -->
+      <section class="stack-section" *ngIf="e.stackTrace">
+        <div class="section-label">📋 Stack Trace</div>
+        <pre class="stack-pre">{{ e.stackTrace }}</pre>
+      </section>
+
+      <!-- ── Solução do dev ─────────────────────────────────────────────── -->
+      <section class="dev-section" *ngIf="e.devSolution">
+        <div class="section-label">✅ Solução registrada</div>
+        <div class="dev-solution">
+          <p class="dev-solution__desc">{{ e.devSolution.description }}</p>
+          <p class="dev-solution__meta">
+            por {{ e.devSolution.author }} em {{ e.devSolution.resolvedAt | date:'dd/MM/yy HH:mm' }}
+          </p>
+        </div>
+      </section>
+
+      <!-- ── Notas ──────────────────────────────────────────────────────── -->
+      <section class="notes-section" *ngIf="e.notes">
+        <div class="section-label">📝 Notas</div>
+        <div class="notes-text">{{ e.notes }}</div>
+      </section>
+
+      <!-- ── Form de edição ─────────────────────────────────────────────── -->
+      <section class="edit-section" *ngIf="editing()">
+        <div class="section-label">✏ Atualizar entrada</div>
+        <div class="edit-form">
+          <label class="edit-label">Status</label>
+          <select class="edit-select" [(ngModel)]="editStatus">
+            <option value="open">Aberto</option>
+            <option value="investigating">Em investigação</option>
+            <option value="resolved">Resolvido</option>
+          </select>
+
+          <ng-container *ngIf="editStatus === 'resolved'">
+            <label class="edit-label">Solução que funcionou</label>
+            <textarea class="edit-textarea" [(ngModel)]="editSolution" rows="3"
+              placeholder="Descreva o que resolveu o problema..."></textarea>
+
+            <label class="edit-label">Seu nome / e-mail</label>
+            <input class="edit-input" [(ngModel)]="editAuthor" placeholder="dev@empresa.com" />
+          </ng-container>
+
+          <label class="edit-label">Notas adicionais</label>
+          <textarea class="edit-textarea" [(ngModel)]="editNotes" rows="2"
+            placeholder="Contexto, links, PR relacionado..."></textarea>
+
+          <div class="edit-actions">
+            <button class="btn-action btn-action--ghost" (click)="editing.set(false)">Cancelar</button>
+            <button class="btn-action btn-action--primary" (click)="saveEdit()">Salvar</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <ng-template #noSelection>
+      <div class="no-selection">
+        <span>👈 Selecione um erro para ver a análise da IA</span>
+      </div>
+    </ng-template>
+
+  </div>
+</div>
