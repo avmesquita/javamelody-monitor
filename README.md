@@ -187,3 +187,7 @@ Sem a chave, o catálogo ainda funciona — erros são coletados e catalogados, 
 | PATCH  | /api/catalog/:id/status           | Atualiza status + solução do dev   |
 | POST   | /api/catalog/:id/reanalyze        | Re-analisa com IA sob demanda      |
 | POST   | /api/catalog/ingest               | Ingere erro (usado pelo BFF)       |
+
+<img width="1170" height="855" alt="image" src="https://github.com/user-attachments/assets/967de280-8b77-4e4f-8cca-cf8422b59cb8" />
+
+
